@@ -3,6 +3,7 @@ const app = express()
 const port = process.env.PORT || 5000
 const cors = require("cors")
 require('dotenv').config()
+var jwt = require('jsonwebtoken');
 
 // middleware
 app.use(cors())
@@ -20,6 +21,14 @@ const run = async () => {
             const posts = req.body
             const result = await productCollection.insertOne(posts)
             res.send(result)
+        })
+
+        app.post('/login',(req,res) => {
+            const email = req.body
+            const token = jwt.sign(email, process.env.DB_SECRET,{
+                expiresIn: '1d'
+            });
+            res.send({accessToken: token})
         })
     }
     finally{
