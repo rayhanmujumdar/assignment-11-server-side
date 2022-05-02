@@ -17,18 +17,13 @@ const run = async () => {
     try{
         await client.connect()
         const productCollection = client.db('product').collection('order')
-        app.post('/order', async(req,res) => {
-            const posts = req.body
-            const result = await productCollection.insertOne(posts)
-            res.send(result)
-        })
-
         app.post('/login',(req,res) => {
             const email = req.body
-            const token = jwt.sign(email, process.env.DB_SECRET,{
+            console.log(email)
+            const accessToken = jwt.sign(email, process.env.DB_SECRET,{
                 expiresIn: '1d'
             });
-            res.send({accessToken: token})
+            res.send({accessToken})
         })
     }
     finally{
@@ -38,7 +33,7 @@ const run = async () => {
 
 run().catch(console.dir)
 
-app.get('/',(req,res) => {
+app.get('/ok',(req,res) => {
     res.send('all ok');
 })
 
