@@ -51,6 +51,17 @@ const run = async () => {
             const result = await productCollection.updateOne(filter,updateQuantity,options)
             res.send(result)
         })
+        //post item product
+        app.put('/items',async (req,res) => {
+            
+        })
+        //delete items
+        app.delete('/items',async(req,res) => {
+            const id = req.query.id
+            const query = {_id: ObjectId(id)}
+            const result = await productCollection.deleteOne(query)
+            res.send(result)
+        })
         // login into jwt added api
         app.post('/login',(req,res) => {
             const email = req.body
