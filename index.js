@@ -53,7 +53,9 @@ const run = async () => {
         })
         //post item product
         app.put('/items',async (req,res) => {
-            
+            const item = req.body
+            const result = await productCollection.insertOne(item)
+            res.send(result)
         })
         //delete items
         app.delete('/items',async(req,res) => {
