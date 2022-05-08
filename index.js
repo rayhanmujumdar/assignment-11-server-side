@@ -14,6 +14,18 @@ var jwt = require('jsonwebtoken');
 app.use(cors())
 app.use(express.json())
 
+// verify token function
+const verifyToken = (req,res,next) => {
+    const authHeader = req.headers.authorization
+    const token = authHeader && authHeader.split(' ')[1]
+    if(token === null) return res.status(401)
+    jwt.verify(token,process.env.DB_SECRET,function(err,decoded){
+        if(err) return res.status(403)
+        req.decoded = decoded
+        next()
+    })
+}
+
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ncyrv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -38,7 +50,6 @@ const run = async () => {
         })
         //update quantity items
         app.put("/items/:id",async(req,res) => {
-            const token = req.headers.authorization
             const id = req.params
             const body = req.body
             const filter = {_id: ObjectId(id)}
@@ -51,18 +62,23 @@ const run = async () => {
             const result = await productCollection.updateOne(filter,updateQuantity,options)
             res.send(result)
         })
-        //post item product
+        //post/add item item product
         app.put('/items',async (req,res) => {
             const item = req.body
             const result = await productCollection.insertOne(item)
             res.send(result)
         })
-        //delete items
-        app.delete('/items',async(req,res) => {
-            const id = req.query.id
-            const query = {_id: ObjectId(id)}
-            const result = await productCollection.deleteOne(query)
-            res.send(result)
+        //delete/inventory manage items
+        app.delete('/items',verifyToken,async(req,res) => {
+            const {id,email} = req.query
+            const decoded = req.decoded.email
+            if(email === decoded){
+                const query = {_id: ObjectId(id)}
+                const result = await productCollection.deleteOne(query)
+                res.send(result)
+            }else{
+                res.status(403).send({message: 'forbidden access'})
+            }
         })
         // login into jwt added api
         app.post('/login',(req,res) => {
