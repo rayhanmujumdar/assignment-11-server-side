@@ -20,7 +20,9 @@ const verifyToken = (req,res,next) => {
     const token = authHeader && authHeader.split(' ')[1]
     if(token === null) return res.status(401)
     jwt.verify(token,process.env.DB_SECRET,function(err,decoded){
-        if(err) return res.status(403)
+        if(err) {
+            return res.status(403).send({message: 'unAuth'})
+        }
         req.decoded = decoded
         next()
     })
@@ -36,7 +38,7 @@ const run = async () => {
         const productCollection = client.db('electronic').collection('items')
         // items find api
         app.get('/items',async (req,res) => {
-            const query = req.query._id
+            const query = req.query
             const cursor = productCollection.find(query)
             const result = await cursor.toArray()
             res.send(result)
@@ -63,10 +65,14 @@ const run = async () => {
             res.send(result)
         })
         //post/add item item product
-        app.put('/items',async (req,res) => {
+        app.put('/items',verifyToken,async (req,res) => {
             const item = req.body
-            const result = await productCollection.insertOne(item)
-            res.send(result)
+            const email = req.query.email
+            const decoded = req.decoded.email
+            if(email === decoded){
+                const result = await productCollection.insertOne(item)
+                res.send(result)
+            }
         })
         //delete/inventory manage items
         app.delete('/items',verifyToken,async(req,res) => {
