@@ -17,9 +17,9 @@ router
   .put(verifyToken, addItemsController)
   //delete/inventory manage items
   .delete(verifyToken, deleteItemsController);
-//get single product
-router
+  router
   .route("/items/:id")
+  //get single product
   .get(getSingleProductController)
   //update quantity items
   .put(updateItemController);
